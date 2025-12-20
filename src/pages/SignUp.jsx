@@ -1,16 +1,16 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from "react-router-dom";
+import { authAPI } from '../api/api';
 
-
-export default function SignUp() {
+export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   function validate() {
     if (!email) return 'Please enter your email';
-    // simple email regex
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return 'Please enter a valid email';
     if (!password) return 'Please enter your password';
     if (password.length < 6) return 'Password must be at least 6 characters';
@@ -25,13 +25,29 @@ export default function SignUp() {
 
     setLoading(true);
     try {
-      // TODO: replace with real API call
-      await new Promise(r => setTimeout(r, 800));
-      // fake success: redirect or show success
-      // Example: navigate('/account') or set auth state
-      alert('Logged in (demo) — replace with real auth flow');
+      const response = await authAPI.login(email, password);
+      
+      localStorage.setItem('access_token', response.data.tokens.access);
+      localStorage.setItem('refresh_token', response.data.tokens.refresh);
+      localStorage.setItem('user', JSON.stringify(response.data.user));
+      
+      alert(`Welcome back, ${response.data.user.first_name}!`);
+      
+      // Redirect based on user type
+      if (response.data.user.is_admin) {
+        navigate('/admin/dashboard');
+      } else {
+        navigate('/');
+      }
+      
     } catch (err) {
-      setError('Login failed. Please check your credentials and try again.');
+      if (err.response?.status === 401) {
+        setError('Invalid email or password.');
+      } else if (err.response?.data?.error) {
+        setError(err.response.data.error);
+      } else {
+        setError('Login failed. Please try again.');
+      }
     } finally {
       setLoading(false);
     }
@@ -39,7 +55,6 @@ export default function SignUp() {
 
   return (
     <div className="min-h-screen bg-white flex flex-col">
-      {/* Hero / Top */}
       <header className="relative bg-cover bg-center" style={{ backgroundImage: `linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.45)), url('/assets/hero-signup.jpg')` }}>
         <div className="max-w-6xl mx-auto px-6 py-16 flex items-center justify-between">
           <div className="text-blacks">
@@ -53,11 +68,9 @@ export default function SignUp() {
         </div>
       </header>
 
-      {/* Main content */}
       <main className="flex-1 flex items-center justify-center -mt-8 px-4">
         <div className="w-full max-w-3xl bg-white rounded-xl shadow-lg overflow-hidden grid grid-cols-1 md:grid-cols-2">
          
-          {/* Right - form */}
           <div className="p-8">
             <h1 className="text-10 font-extrabold">Login to Your Account</h1>
             <p className="text-sm text-gray-500 mt-1">Enter your email and password to access your account</p>
@@ -112,14 +125,9 @@ export default function SignUp() {
                 <p className="text-sm text-gray-500">Don't have an account? <a href="/register" className="text-orange-600 underline">Register</a></p>
               </div>
             </form>
-
-           
           </div>
         </div>
       </main>
-
-      
-      
     </div>
   );
 }
