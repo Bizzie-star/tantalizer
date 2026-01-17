@@ -22,17 +22,28 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Handle token refresh
+
+
+// Handle token refresh & Infinite Loop prevention
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
     
+    // If error is 401 and we haven't tried refreshing yet
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
       
+      const refreshToken = localStorage.getItem('refresh_token');
+      
+      // If there's no refresh token at all, don't even try. Just logout.
+      if (!refreshToken) {
+        localStorage.clear();
+        window.location.href = '/signup';
+        return Promise.reject(error);
+      }
+
       try {
-        const refreshToken = localStorage.getItem('refresh_token');
         const response = await axios.post(`${API_BASE_URL}/auth/token/refresh/`, {
           refresh: refreshToken
         });
@@ -40,11 +51,14 @@ api.interceptors.response.use(
         const { access } = response.data;
         localStorage.setItem('access_token', access);
         
+        // Update the original request with new token and retry
         originalRequest.headers.Authorization = `Bearer ${access}`;
         return api(originalRequest);
       } catch (refreshError) {
-        // Redirect to login
-        window.location.href = '/login';
+        // REFRESH FAILED: Token is blacklisted or expired. 
+        // Clear storage to stop the infinite loop and redirect to login
+        localStorage.clear();
+        window.location.href = '/signup';
         return Promise.reject(refreshError);
       }
     }
@@ -55,92 +69,48 @@ api.interceptors.response.use(
 
 // Auth endpoints
 export const authAPI = {
-  login: (email, password) => 
-    api.post('/auth/login/', { email, password }),
-  
-  register: (userData) => 
-    api.post('/auth/register/', userData),
-  
-  logout: () => 
-    api.post('/auth/logout/', {
+  login: (email, password) => api.post('/auth/login/', { email, password }),
+  register: (userData) => api.post('/auth/register/', userData),
+  logout: () => api.post('/auth/logout/', {
       refresh_token: localStorage.getItem('refresh_token')
     }),
-  
-  getProfile: () => 
-    api.get('/auth/profile/'),
-  
-  updateProfile: (data) => 
-    api.put('/auth/profile/', data),
-  
-  resetPassword: (email, newPassword, confirmPassword) => 
-    api.post('/auth/password-reset/', {
-      email,
-      new_password: newPassword,
-      confirm_password: confirmPassword
-    }),
+  getProfile: () => api.get('/auth/profile/'),
+  updateProfile: (data) => api.put('/auth/profile/', data),
+  refreshToken: (refresh) => axios.post(`${API_BASE_URL}/auth/token/refresh/`, { refresh }),
 };
 
 // Menu endpoints
 export const menuAPI = {
-  getFoods: (params) => 
-    api.get('/menu/foods/', { params }),
-  
-  getCategories: () => 
-    api.get('/menu/categories/'),
-  
-  getFoodById: (id) => 
-    api.get(`/menu/foods/${id}/`),
+  getFoods: (params) => api.get('/menu/foods/', { params }),
+  getCategories: () => api.get('/menu/categories/'),
+  getFoodById: (id) => api.get(`/menu/foods/${id}/`),
 };
 
-// Cart endpoints
+// Cart endpoints - UPDATED to match your Django URLs
 export const cartAPI = {
-  getCart: () => 
-    api.get('/cart/'),
-  
-  addToCart: (foodId, quantity) => 
-    api.post('/cart/add/', { food_id: foodId, quantity }),
-  
-  updateCartItem: (itemId, quantity) => 
-    api.patch(`/cart/${itemId}/`, { quantity }),
-  
-  removeCartItem: (itemId) => 
-    api.delete(`/cart/${itemId}/`),
-  
-  clearCart: () => 
-    api.delete('/cart/clear/'),
+  getCart: () => api.get('/cart/'),
+  addToCart: (foodId, quantity) => api.post('/cart/add/', { food_id: foodId, quantity }),
+  updateCartItem: (itemId, quantity) => api.patch(`/cart/items/${itemId}/update/`, { quantity }),
+  removeCartItem: (itemId) => api.delete(`/cart/items/${itemId}/remove/`),
+  clearCart: () => api.delete('/cart/clear/'),
 };
 
 // Order endpoints
 export const orderAPI = {
-  createOrder: (data) => 
-    api.post('/orders/create/', data),
-  
-  getOrders: () => 
-    api.get('/orders/'),
-  
-  getOrder: (id) => 
-    api.get(`/orders/${id}/`),
-  
+  createOrder: (data) => api.post('/orders/create/', data),
+  getOrders: () => api.get('/orders/'),
+  getOrder: (id) => api.get(`/orders/${id}/`),
   updateOrderStatus: (orderId, status, adminNotes) => 
-    api.patch(`/orders/admin/${orderId}/update-status/`, { 
-      status, 
-      admin_notes: adminNotes 
-    }),
+    api.patch(`/orders/admin/${orderId}/update-status/`, { status, admin_notes: adminNotes }),
 };
 
 // Payment endpoints
 export const paymentAPI = {
-  initializePayment: (orderId) => 
-    api.post('/payments/initialize/', { order_id: orderId }),
-  
-  verifyPayment: (reference) => 
-    api.post('/payments/verify/', { reference }),
-  
-  getPaymentHistory: () => 
-    api.get('/payments/history/'),
+  initializePayment: (orderId) => api.post('/payments/initialize/', { order_id: orderId }),
+  verifyPayment: (reference) => api.post('/payments/verify/', { reference }),
+  getPaymentHistory: () => api.get('/payments/history/'),
 };
 
-// Review endpoints
 export const reviewAPI = {
   createReview: (data) => 
     api.post('/reviews/create/', data),

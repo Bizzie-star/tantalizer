@@ -22,8 +22,8 @@ function Header() {
     { label: "Contact", to: "/contact" },
     { label: "Cart", to: "/cart" },
     { label: "About", to: "/about" },
-    { label: "Admindashboard", to: "/admindashboard" },
-    { label: "Userdashboard", to: "/userdashboard" },
+    // { label: "Admindashboard", to: "/admindashboard" },
+    // { label: "Userdashboard", to: "/userdashboard" },
   ];
 
  

@@ -1,92 +1,156 @@
-
 import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 
 export default function Register() {
-  const [name, setName] = useState('');
-  const [phone, setPhone] = useState('');
-  const [password, setPassword] = useState('');
+  const [formData, setFormData] = useState({
+    email: '',
+    first_name: '',
+    phone_number: '',
+    password: '',
+    password2: '',
+  });
 
-  const handleSubmit = (e) => {
+  const { register, loading, error, setError } = useAuth();
+  const navigate = useNavigate();
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (name && phone && password) {
-      alert(`Account created successfully! Welcome to B's Kitchen, ${name} `);
-    } else {
-      alert('Please fill in all fields.');
+    
+    // Client-side password match check
+    if (formData.password !== formData.password2) {
+      setError("Passwords do not match!");
+      return;
+    }
+
+    const result = await register(formData);
+    
+    if (result.success) {
+      // Your backend returns tokens and user data on successful registration
+      // Redirect to the dashboard
+      navigate('/userdashboard');
     }
   };
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4">
       <div className="max-w-md w-full">
+        {/* Header */}
         <div className="text-center mb-10">
-          <div className="bg-gray-200 border-2 border-dashed rounded-full w-32 h-32 mx-auto mb-6 flex items-center justify-center">
-            <span className="text-6xl"></span>
+          <div className="bg-orange-100 rounded-full w-24 h-24 mx-auto mb-6 flex items-center justify-center">
+            <span className="text-4xl">🍳</span>
           </div>
           <h1 className="text-4xl font-bold text-gray-800">Join B's Kitchen</h1>
           <p className="text-xl text-gray-600 mt-3">Create your account</p>
-          <p className="text-lg text-gray-600 mt-2">Order faster & save your favorites </p>
         </div>
 
+        {/* Error Display */}
+        {error && (
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+            <p className="font-bold">Error</p>
+            {typeof error === 'object' ? (
+              <ul className="list-disc ml-5">
+                {Object.entries(error).map(([key, value]) => (
+                  <li key={key}>{`${key}: ${value}`}</li>
+                ))}
+              </ul>
+            ) : (
+              <p>{error}</p>
+            )}
+          </div>
+        )}
+
         <div className="bg-white rounded-lg shadow-md p-8">
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {/* First Name */}
             <div>
-              <label className="block text-lg font-medium text-gray-700 mb-2">Full Name</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">First Name</label>
               <input
+                name="first_name"
                 type="text"
-                placeholder="Enter your name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
+                placeholder="e.g. Miracle"
+                value={formData.first_name}
+                onChange={handleChange}
                 required
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 text-lg"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:outline-none"
               />
             </div>
 
+            {/* Email */}
             <div>
-              <label className="block text-lg font-medium text-gray-700 mb-2">Phone Number</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
               <input
+                name="email"
+                type="email"
+                placeholder="name@example.com"
+                value={formData.email}
+                onChange={handleChange}
+                required
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:outline-none"
+              />
+            </div>
+
+            {/* Phone Number */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+              <input
+                name="phone_number"
                 type="tel"
-                placeholder="e.g. 09160416617"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
+                placeholder="e.g. 08012345678"
+                value={formData.phone_number}
+                onChange={handleChange}
                 required
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 text-lg"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:outline-none"
               />
             </div>
 
+            {/* Password */}
             <div>
-              <label className="block text-lg font-medium text-gray-700 mb-2">Password</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
               <input
+                name="password"
                 type="password"
-                placeholder="Create a password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Create a strong password"
+                value={formData.password}
+                onChange={handleChange}
                 required
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 text-lg"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:outline-none"
+              />
+            </div>
+
+            {/* Confirm Password */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Confirm Password</label>
+              <input
+                name="password2"
+                type="password"
+                placeholder="Repeat your password"
+                value={formData.password2}
+                onChange={handleChange}
+                required
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:outline-none"
               />
             </div>
 
             <button
               type="submit"
-              className="w-full bg-orange-600 text-white font-bold text-xl py-4 rounded-lg hover:bg-orange-700 transition shadow-lg"
+              disabled={loading}
+              className={`w-full bg-orange-600 text-white font-bold text-xl py-4 rounded-lg hover:bg-orange-700 transition shadow-lg ${
+                loading ? 'opacity-50 cursor-not-allowed' : ''
+              }`}
             >
-              Create Account 
+              {loading ? 'Creating Account...' : 'Create Account'}
             </button>
           </form>
 
-          <div className="mt-8 text-center">
-            <p className="text-gray-700">Already have an account?</p>
-            <Link to="/signin" className="inline-block mt-3 text-blue-600 font-bold text-xl hover:underline">
+          <div className="mt-8 text-center border-t pt-6">
+            <p className="text-gray-700 text-sm">Already have an account?</p>
+            <Link to="/signup" className="inline-block mt-2 text-blue-600 font-bold hover:underline">
               Sign In →
-            </Link>
-          </div>
-
-          <div className="text-center mt-8">
-            <p className="text-gray-600">Or skip signing up</p>
-            <Link
-              to="/order"
-              className="inline-block mt-3 bg-gray-200 text-gray-800 font-bold text-lg py-3 px-8 rounded-lg hover:bg-gray-300 transition"
-            >
-              Order as Guest 
             </Link>
           </div>
         </div>
