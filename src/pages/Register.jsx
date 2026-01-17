@@ -72,7 +72,7 @@ export default function Register() {
               <input
                 name="first_name"
                 type="text"
-                placeholder="e.g. Miracle"
+                placeholder="e.g. Etoro"
                 value={formData.first_name}
                 onChange={handleChange}
                 required
