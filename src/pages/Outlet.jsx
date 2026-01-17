@@ -1,104 +1,94 @@
-// src/pages/Outlets.jsx
-import React, { useState } from "react";
-
-const sampleOutlets = [
-  { id: 1, name: "Festac I - Festac Town", address: "Makay Plaza, I Close, 21 Road, Festac Town" },
-  { id: 2, name: "Lagos I - Broad Street", address: "19 Broad Str, Opp. Bookshop House, Lagos" },
-  { id: 3, name: "Allen - Allen Avenue", address: "117 Allen Ave, Opp Alade Shopping Mall, Ikeja" },
-  { id: 4, name: "Apapa - Kofo Abayomi", address: "62 Kofo Abayomi Ave, Apapa" },
-  // add more or fetch from API
-];
+import React from 'react';
+import { Link } from 'react-router-dom';
 
 export default function Outlets() {
-  const [query, setQuery] = useState("");
-  const filtered = sampleOutlets.filter(
-    (o) =>
-      o.name.toLowerCase().includes(query.toLowerCase()) ||
-      o.address.toLowerCase().includes(query.toLowerCase())
-  );
-
   return (
-    <div className="min-h-screen bg-gray-50 px-4 py-10">
-      <div className="max-w-6xl mx-auto bg-white shadow-lg rounded-2xl overflow-hidden">
-        {/* header */}
-        <div className="px-6 py-6 border-b">
-          <h1 className="text-2xl font-bold">Outlets</h1>
-          <p className="text-sm text-gray-500 mt-1">
-            Below are a list of all our outlets across Nigeria. Check them out to see the one closest to you.
+    <div className="min-h-screen bg-gray-50 py-8 px-4">
+      <div className="max-w-4xl mx-auto">
+        {/* Header */}
+        <div className="text-center mb-10">
+          <h1 className="text-4xl font-bold text-gray-800 flex items-center justify-center gap-3">
+            <span role="img" aria-label="location"></span>
+            Our Outlets
+          </h1>
+          <p className="text-xl text-gray-600 mt-3">
+            Find B's Kitchen on campus — Fresh meals, always close by!
+          </p>
+          <p className="text-lg text-blue-600 mt-2 font-medium">
+            Proudly serving our university community 
           </p>
         </div>
 
-        {/* search + actions */}
-        <div className="px-6 py-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          <div className="flex items-center gap-3 w-full md:w-1/2">
-            <input
-              aria-label="Search outlets"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search by city, outlet name or address..."
-              className="w-full rounded-lg border px-4 py-2 focus:outline-none focus:ring-2 focus:ring-orange-400"
-            />
-          </div>
+        {/* Current Outlet */}
+        <div className="bg-white rounded-lg shadow-md p-8 mb-12">
+          <h2 className="text-2xl font-semibold mb-6 text-center">
+            Main Outlet (Currently Serving)
+          </h2>
 
-          <div className="flex items-center gap-3">
-            <button className="px-4 py-2 rounded-lg bg-orange-600 text-white hover:bg-orange-700">
-              View on map
-            </button>
-            <a href="/franchise" className="text-sm text-orange-600 underline">
-              Franchise info
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+            <div>
+              <h3 className="text-xl font-bold mb-4">B's Kitchen - Ikot Akpaden</h3>
+              <div className="space-y-4 text-gray-700">
+                <p className="flex items-center gap-3">
+                  <span className="text-2xl"></span>
+                  <span>UbongAbasi Street, along school road.</span>
+                </p>
+                <p className="flex items-center gap-3">
+                  <span className="text-2xl"></span>
+                  <span>Monday - Sunday: 8:00 AM - 9:30 PM</span>
+                </p>
+                <p className="flex items-center gap-3">
+                  <span className="text-2xl"></span>
+                  <span>
+                    <a href="tel:09160416617" className="text-blue-600 hover:underline">0916 041 6617</a> | 
+                    <a href="tel:07089828558" className="text-blue-600 hover:underline ml-1">0708 982 8558</a>
+                  </span>
+                </p>
+                <p className="flex items-center gap-3">
+                  <span className="text-2xl"></span>
+                  <span>Free & fast delivery to all hostels, departments, and lecture halls on campus</span>
+                </p>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        {/* Future Expansion */}
+        <div className="bg-blue-50 rounded-lg shadow-md p-8 mb-12 border border-blue-200">
+          <h2 className="text-2xl font-semibold mb-6 text-center text-blue-800">
+            Coming Soon to More Campuses!
+          </h2>
+          <p className="text-center text-gray-700 mb-6 leading-relaxed">
+            B's Kitchen is growing! We're actively looking to open new outlets in other universities across Nigeria.
+          </p>
+          <div className="text-center">
+            <p className="text-lg mb-4">
+              Want B's Kitchen at <strong>your</strong> school?
+            </p>
+            <a
+              href="/franchise"
+              className="inline-block bg-blue-600 text-white font-bold text-xl py-4 px-8 rounded-lg hover:bg-blue-700 transition"
+            >
+              Learn About Franchise Opportunities →
             </a>
           </div>
         </div>
 
-        {/* list */}
-        <div className="px-6 py-4">
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-100">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">S/N</th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">Outlet</th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">Outlet Address</th>
-                  <th className="px-4 py-3 text-right text-sm font-medium text-gray-600">Action</th>
-                </tr>
-              </thead>
-
-              <tbody className="bg-white divide-y divide-gray-100">
-                {filtered.length === 0 ? (
-                  <tr>
-                    <td colSpan="4" className="px-4 py-8 text-center text-gray-500">
-                      No outlets found.
-                    </td>
-                  </tr>
-                ) : (
-                  filtered.map((o, idx) => (
-                    <tr key={o.id}>
-                      <td className="px-4 py-4 text-sm text-gray-700">{idx + 1}</td>
-                      <td className="px-4 py-4 text-sm font-medium text-gray-900">{o.name}</td>
-                      <td className="px-4 py-4 text-sm text-gray-700">{o.address}</td>
-                      <td className="px-4 py-4 text-right">
-                        <a
-                          href={`https://www.google.com/maps/search/${encodeURIComponent(o.address)}`}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="inline-block px-3 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 text-sm"
-                        >
-                          Open in Maps
-                        </a>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
+        {/* Call to Action */}
+        <div className="text-center">
+          <p className="text-lg text-gray-700 mb-6">
+            Can't wait to serve you delicious, affordable meals every day!
+          </p>
+         
         </div>
 
-        {/* footer */}
-        <div className="px-6 py-5 border-t bg-gray-50 text-sm text-gray-600">
-          <div className="max-w-6xl mx-auto">
-            <p>For more outlet information or franchise requests, visit the Franchise page.</p>
-          </div>
+        {/* Footer Note */}
+        <div className="text-center mt-12 text-gray-600">
+          <p className="text-lg">
+            Made with love at <span className="font-bold text-blue-600">B's Kitchen</span>
+          </p>
+          <p className="mt-2">Your favorite campus kitchen</p>
         </div>
       </div>
     </div>

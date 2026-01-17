@@ -1,157 +1,157 @@
-import React from "react";
-
-const sampleCart = {
-  items: [
-     { id: 1, title: 'Jollof Rice', price: 600, img: '/src/assets/jollofrice.jpg' },
-    { id: 2, title: 'Fried Rice', price: 600, img: '/src/assets/friedrice.jpg' },
-    { id: 3, title: 'Coconut Rice', price: 600, img: '/src/assets/coconutrice.jpg' },
-    { id: 4, title: 'White Rice', price: 600, img: '/src/assets/riceandstew.jpg' },
-  ],
-};
+import React, { useState } from 'react';
 
 export default function Cart() {
-  const { items } = sampleCart;
-  const subtotal = items.reduce((s, it) => s + it.price * it.qty, 0);
+  // Sample cart items - replace with real cart data later
+  const [cartItems, setCartItems] = useState([
+    { id: '1', name: 'Jollof Rice with Chicken', price: 3500, quantity: 2 },
+    { id: '2', name: 'Egusi Soup with Pounded Yam', price: 4500, quantity: 1 },
+    { id: '5', name: 'Chapman Drink', price: 1500, quantity: 3 },
+    { id: '8', name: 'Puff Puff (6 pieces)', price: 1200, quantity: 2 },
+  ]);
 
-  return (
-    <div className="min-h-screen w-full  bg-gray-50">
-      {/* Brown Header / Progress Bar Section */}
-      <div className="bg-orange-900 text-white py-6">
-        <div className="max-w-5xl mx-auto px-4">
-          <h2 className="text-2xl font-semibold">Shopping Cart</h2>
-          <div className="mt-3 flex items-center space-x-4 text-sm">
-            <div className="flex items-center space-x-1">
-              <span className="font-bold">1.</span>
-              <span>Shopping Cart</span>
-            </div>
-            <span className="text-gray-300">|</span>
-            <div className="flex items-center space-x-1">
-              <span className="font-bold">2.</span>
-              <span>Check out</span>
-            </div>
-            <span className="text-gray-300">|</span>
-            <div className="flex items-center space-x-1">
-              <span className="font-bold">3.</span>
-              <span>Order Complete</span>
-            </div>
-            <span className="text-gray-300">|</span>
-            <div className="flex items-center space-x-1">
-              <span className="font-bold">4.</span>
-              <span>Track your order</span>
-            </div>
+  const updateQuantity = (id, newQuantity) => {
+    if (newQuantity < 1) {
+      removeItem(id);
+      return;
+    }
+    setCartItems(prev =>
+      prev.map(item =>
+        item.id === id ? { ...item, quantity: newQuantity } : item
+      )
+    );
+  };
+
+  const removeItem = (id) => {
+    setCartItems(prev => prev.filter(item => item.id !== id));
+  };
+
+  const subtotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+
+  // Format price in Naira with proper commas and two decimals
+  const formatPrice = (amount) => {
+    const amountStr = Number(amount).toFixed(2);
+    const [integerPart, decimalPart] = amountStr.split('.');
+    const formattedInteger = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    return `₦${formattedInteger}.${decimalPart}`;
+  };
+
+  if (cartItems.length === 0) {
+    return (
+      <div className="min-h-screen bg-gray-50 py-8 px-4">
+        <div className="max-w-4xl mx-auto text-center">
+          <h1 className="text-4xl font-bold text-gray-800 mb-6 flex items-center justify-center gap-3">
+            <span role="img" aria-label="shopping cart"></span>
+            My Cart - B's Kitchen
+          </h1>
+          <div className="bg-white rounded-lg shadow-md p-16">
+            <p className="text-2xl text-gray-600 mb-6">Your cart is empty!!!</p>
+            <a
+              href="/order"
+              className="inline-block bg-blue-600 text-white font-bold text-xl py-4 px-8 rounded-lg hover:bg-blue-700 transition"
+            >
+              Browse Menu
+            </a>
           </div>
         </div>
       </div>
+    );
+  }
 
-      {/* Main Cart Content */}
-      <div className="px-4 py-10">
-        <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6">
-          {/* Cart Items / Details */}
-          <div className="md:col-span-2 bg-white shadow rounded-2xl p-6">
-            {items.length === 0 ? (
-              <div className="py-20 text-center text-gray-500">Your cart is empty.</div>
-            ) : (
-              <>
-                <div className="space-y-4">
-                  {items.map((it) => (
-                    <div key={it.id} className="flex items-center gap-4 border rounded-lg p-3">
-                      <img
-                        src={it.image}
-                        alt={it.title}
-                        className="w-20 h-20 object-cover rounded-md flex-shrink-0"
-                        onError={(e) => (e.currentTarget.src = "/images/placeholder.png")}
-                      />
-                      <div className="flex-1">
-                        <div className="flex justify-between items-start">
-                          <h3 className="font-medium">{it.title}</h3>
-                          <div className="text-sm font-medium">₦{it.price.toLocaleString()}</div>
-                        </div>
-                        <div className="mt-2 flex items-center gap-3">
-                          <div className="flex items-center border rounded-lg overflow-hidden">
-                            <button className="px-3 py-1 text-gray-600">−</button>
-                            <div className="px-4 py-1 bg-gray-50">{it.qty}</div>
-                            <button className="px-3 py-1 text-gray-600">+</button>
-                          </div>
-                          <button className="text-sm text-red-600 underline">Remove</button>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
+  return (
+    <div className="min-h-screen bg-gray-50 py-8 px-4">
+      <div className="max-w-4xl mx-auto">
+        {/* Header */}
+        <div className="text-center mb-10">
+          <h1 className="text-4xl font-bold text-gray-800 flex items-center justify-center gap-3">
+            <span role="img" aria-label="shopping cart"></span>
+            My Cart - B's Kitchen
+          </h1>
+          <p className="text-gray-600 mt-2">
+            {cartItems.length} item{cartItems.length !== 1 ? 's' : ''} in your cart
+          </p>
+          <p className="text-lg text-blue-600 mt-2 font-medium">Delicious meals made with love </p>
+        </div>
 
-                  <div className="flex justify-between items-center pt-3 border-t">
-                    <div className="text-gray-600">Subtotal</div>
-                    <div className="text-lg font-semibold">₦{subtotal.toLocaleString()}</div>
-                  </div>
+        {/* Cart Items */}
+        <div className="bg-white rounded-lg shadow-md p-8 mb-8">
+          <h2 className="text-2xl font-semibold mb-6">Your Order</h2>
 
-                  <div className="flex gap-3 mt-4">
-                    <a
-                      href="/checkout"
-                      className="px-5 py-3 rounded-lg bg-orange-600 text-white hover:bg-orange-700"
-                    >
-                      Proceed to Checkout
-                    </a>
-                    <a href="/menu" className="px-5 py-3 rounded-lg border">Continue Shopping</a>
-                  </div>
+          <div className="space-y-6">
+            {cartItems.map(item => (
+              <div
+                key={item.id}
+                className="flex items-center justify-between py-6 border-b border-gray-200 last:border-0"
+              >
+                <div className="flex-1">
+                  <h3 className="text-xl font-medium">{item.name}</h3>
+                  <p className="text-gray-600">{formatPrice(item.price)} each</p>
                 </div>
-              </>
-            )}
+
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center border border-gray-300 rounded-lg">
+                    <button
+                      type="button"
+                      onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                      className="px-4 py-2 text-xl hover:bg-gray-100 rounded-l-lg"
+                    >
+                      −
+                    </button>
+                    <span className="px-6 py-2 text-lg font-semibold min-w-16 text-center">
+                      {item.quantity}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                      className="px-4 py-2 text-xl hover:bg-gray-100 rounded-r-lg"
+                    >
+                      +
+                    </button>
+                  </div>
+
+                  <div className="text-right min-w-32">
+                    <p className="text-xl font-bold text-blue-600">
+                      {formatPrice(item.price * item.quantity)}
+                    </p>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => removeItem(item.id)}
+                    className="ml-4 text-red-600 hover:text-red-800 text-2xl"
+                  >
+                    ×
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Total */}
+        <div className="bg-white rounded-lg shadow-md p-8">
+          <div className="text-right mb-8">
+            <p className="text-3xl font-bold text-blue-600">
+              Total: {formatPrice(subtotal)}
+            </p>
           </div>
 
-          {/* Recommendations / Summary */}
-          <aside className="bg-white shadow rounded-2xl p-6">
-            <h4 className="text-lg font-medium mb-3">Can we tantalize you with?</h4>
-            <div className="space-y-3">
-              {/** Display sample recommended items */}
-              <div className="flex items-center gap-3">
-                <img
-                  src="/images/veg-salad.jpg"
-                  alt="Vegetable Salad"
-                  className="w-16 h-16 rounded-md object-cover"
-                />
-                <div>
-                  <div className="text-sm font-medium">Fried Rice</div>
-                  <div className="text-sm text-gray-500">₦850</div>
-                </div>
-              </div>
-              <div className="flex items-center gap-3">
-                <img
-                  src="/src/assets/jollofrice.jpg"
-                  alt="Jollof Rice"
-                  className="w-16 h-16 rounded-md object-cover"
-                />
-                <div>
-                  <div className="text-sm font-medium">Coconut Rice</div>
-                  <div className="text-sm text-gray-500">₦1,500</div>
-                </div>
-              </div>
-              <div className="flex items-center gap-3">
-                <img
-                  src="/images/chicken-salad.jpg"
-                  alt="Chicken Salad"
-                  className="w-16 h-16 rounded-md object-cover"
-                />
-                <div>
-                  <div className="text-sm font-medium">Jollof Rice</div>
-                  <div className="text-sm text-gray-500">₦1,500</div>
-                </div>
-              </div>
-              <div className="flex items-center gap-3">
-                <img
-                  src="/images/chicken-salad.jpg"
-                  alt="Chicken Salad"
-                  className="w-16 h-16 rounded-md object-cover"
-                />
-                <div>
-                  <div className="text-sm font-medium">Rice and Stew</div>
-                  <div className="text-sm text-gray-500">₦1,500</div>
-                </div>
-              </div>
-              <div className="mt-4">
-                <p className="text-xs text-gray-500">Prices Inclusive of VAT and Consumption Tax</p>
-              </div>
-            </div>
-          </aside>
+          <div className="space-y-4">
+            <button className="w-full bg-blue-600 text-white font-bold text-xl py-4 rounded-lg hover:bg-blue-700 transition">
+              Proceed to Checkout 💳
+            </button>
+
+            <a
+              href="/order"
+              className="block w-full text-center border-2 border-blue-600 text-blue-600 font-bold text-xl py-4 rounded-lg hover:bg-blue-50 transition"
+            >
+              Continue Shopping ←
+            </a>
+          </div>
         </div>
+
+        <p className="text-center text-gray-600 mt-10">
+          Freshly prepared by B's Kitchen • Ready in 15-25 minutes • Thank you for choosing us! 🍲
+        </p>
       </div>
     </div>
   );

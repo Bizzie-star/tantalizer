@@ -12,9 +12,9 @@ export default function About() {
       <section className="bg-[url('/assets/about-hero.jpg')] bg-cover bg-center"> 
         <div className="backdrop-brightness-75">
           <div className="max-w-6xl mx-auto px-6 py-28 text-white">
-            <h1 className="text-4xl md:text-6xl font-extrabold leading-tight">About Tantalizers</h1>
+            <h1 className="text-4xl md:text-6xl font-extrabold leading-tight">About B's Kitchen</h1>
             <p className="mt-4 text-lg md:text-xl max-w-3xl">
-              We bring delicious, ready-to-eat meals and memorable dining experiences to communities across Nigeria. From humble beginnings to a nationwide presence, our mission is simple: great food, served with love.
+              We bring delicious, ready-to-eat meals and memorable dining experiences to the campus. Our mission is simple: great food, served with love.
             </p>
             <div className="mt-8 flex gap-3">
               <Link to="/menu" className="inline-block bg-orange-600 hover:bg-orange-700 text-white font-semibold px-5 py-3 rounded-lg shadow">See our menu</Link>
@@ -35,16 +35,14 @@ export default function About() {
           </div>
 
           <div className="col-span-2 grid grid-cols-3 gap-4">
+           
+           
             <div className="bg-white rounded-xl p-6 shadow">
-              <div className="text-3xl font-bold">40+</div>
-              <div className="text-sm text-neutral-500 mt-1">Branches nationwide</div>
-            </div>
-            <div className="bg-white rounded-xl p-6 shadow">
-              <div className="text-3xl font-bold">100k+</div>
+              <div className="text-3xl font-bold">5+</div>
               <div className="text-sm text-neutral-500 mt-1">Meals served monthly</div>
             </div>
             <div className="bg-white rounded-xl p-6 shadow">
-              <div className="text-3xl font-bold">30 yrs</div>
+              <div className="text-3xl font-bold">2 yrs</div>
               <div className="text-sm text-neutral-500 mt-1">Heritage & flavour</div>
             </div>
           </div>
