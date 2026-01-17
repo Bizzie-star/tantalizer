@@ -1,6 +1,6 @@
 // contexts/OrderContext.jsx
 import React, { createContext, useState, useContext } from 'react';
-import { orderAPI } from '../services/api';
+import { orderAPI } from '../api/api';
 
 const OrderContext = createContext({});
 

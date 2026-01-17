@@ -1,6 +1,6 @@
 // contexts/MenuContext.jsx
 import React, { createContext, useState, useContext } from 'react';
-import { menuAPI } from '../services/api';
+import { menuAPI } from '../api/api';
 
 const MenuContext = createContext({});
 

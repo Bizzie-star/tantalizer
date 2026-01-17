@@ -1,6 +1,6 @@
 // contexts/ReviewContext.jsx
 import React, { createContext, useState, useContext } from 'react';
-import { reviewAPI } from '../services/api';
+import { reviewAPI } from '../api/api';
 
 const ReviewContext = createContext({});
 
@@ -106,8 +106,8 @@ export const ReviewProvider = ({ children }) => {
   };
 
   return (
-    <OrderContext.Provider value={value}>
+    <ReviewContext.Provider value={value}>
       {children}
-    </OrderContext.Provider>
+    </ReviewContext.Provider>
   );
 };
