@@ -6,7 +6,7 @@ import Franchise from "../pages/Franchise";
 import SignUp from "../pages/SignUp";
 import Forgotpassword from "../pages/Forgotpassword";
 import Register from "../pages/Register";
-import Cart from "../pages/cart";
+import Cart from "../pages/Cart";
 import Outlet from "../pages/Outlet";
 import Admindashboard from "../pages/Admindashboard";
 import Userdashboard from "../pages/Userdashboard";

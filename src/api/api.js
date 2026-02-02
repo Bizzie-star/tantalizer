@@ -1,7 +1,7 @@
 // src/services/api.js
 import axios from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000/api';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -22,47 +22,50 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-
-
-// Handle token refresh & Infinite Loop prevention
+// 3. Response Interceptor (Handle Refresh & Logout)
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
-    
-    // If error is 401 and we haven't tried refreshing yet
+
+    // Check if error is 401 and we haven't retried yet
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
-      
       const refreshToken = localStorage.getItem('refresh_token');
-      
-      // If there's no refresh token at all, don't even try. Just logout.
+
+      // If no refresh token, force logout
       if (!refreshToken) {
         localStorage.clear();
-        window.location.href = '/signup';
+        window.location.href = '/login';
         return Promise.reject(error);
       }
 
       try {
+        // Attempt to get a new access token
         const response = await axios.post(`${API_BASE_URL}/auth/token/refresh/`, {
           refresh: refreshToken
         });
-        
+
         const { access } = response.data;
+        
+        // Save new token
         localStorage.setItem('access_token', access);
         
-        // Update the original request with new token and retry
+        // Update header
         originalRequest.headers.Authorization = `Bearer ${access}`;
+        
+        // Retry the original request using the 'api' instance
+        // FIX: Use 'api' instead of 'axios' to keep the baseURL configuration
         return api(originalRequest);
+
       } catch (refreshError) {
-        // REFRESH FAILED: Token is blacklisted or expired. 
-        // Clear storage to stop the infinite loop and redirect to login
+        // If refresh fails, session is dead. Force Logout.
+        console.error("Session expired. Logging out...");
         localStorage.clear();
-        window.location.href = '/signup';
+        window.location.href = '/login';
         return Promise.reject(refreshError);
       }
     }
-    
     return Promise.reject(error);
   }
 );
@@ -71,12 +74,16 @@ api.interceptors.response.use(
 export const authAPI = {
   login: (email, password) => api.post('/auth/login/', { email, password }),
   register: (userData) => api.post('/auth/register/', userData),
-  logout: () => api.post('/auth/logout/', {
-      refresh_token: localStorage.getItem('refresh_token')
-    }),
+  logout: () => {
+    const refresh_token = localStorage.getItem('refresh_token');
+    if (refresh_token) {
+        return api.post('/auth/logout/', { refresh_token });
+    }
+    return Promise.resolve();
+  },
   getProfile: () => api.get('/auth/profile/'),
+  getAllUsers: () => api.get('/auth/all-customers/'),
   updateProfile: (data) => api.put('/auth/profile/', data),
-  refreshToken: (refresh) => axios.post(`${API_BASE_URL}/auth/token/refresh/`, { refresh }),
 };
 
 // Menu endpoints
@@ -84,12 +91,22 @@ export const menuAPI = {
   getFoods: (params) => api.get('/menu/foods/', { params }),
   getCategories: () => api.get('/menu/categories/'),
   getFoodById: (id) => api.get(`/menu/foods/${id}/`),
+  getAdminFoods: () => api.get('/menu/admin/foods/'),
+  createFood: (formData) => api.post('/menu/admin/foods/create/', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  }),
+  updateFood: (id, formData) => api.put(`/menu/admin/foods/${id}/update/`, formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  }),
+  deleteFood: (id) => api.delete(`/menu/admin/foods/${id}/delete/`),
 };
 
-// Cart endpoints - UPDATED to match your Django URLs
+// Cart endpoints
 export const cartAPI = {
   getCart: () => api.get('/cart/'),
-  addToCart: (foodId, quantity) => api.post('/cart/add/', { food_id: foodId, quantity }),
+  addToCart: (data) => api.post('/cart/add/', data),
   updateCartItem: (itemId, quantity) => api.patch(`/cart/items/${itemId}/update/`, { quantity }),
   removeCartItem: (itemId) => api.delete(`/cart/items/${itemId}/remove/`),
   clearCart: () => api.delete('/cart/clear/'),
@@ -98,31 +115,44 @@ export const cartAPI = {
 // Order endpoints
 export const orderAPI = {
   createOrder: (data) => api.post('/orders/create/', data),
-  getOrders: () => api.get('/orders/'),
-  getOrder: (id) => api.get(`/orders/${id}/`),
-  updateOrderStatus: (orderId, status, adminNotes) => 
-    api.patch(`/orders/admin/${orderId}/update-status/`, { status, admin_notes: adminNotes }),
+  getMyOrders: () => api.get('/orders/'), 
+  getOrder: (id) => api.get(`/orders/${id}/`), 
+  cancelOrder: (id) => api.post(`/orders/${id}/cancel/`), 
+
+  // --- Payment Endpoints ---
+  initiatePayment: (orderId) => api.post('/orders/payment/initiate/', { order_id: orderId }),
+
+  // --- Admin Endpoints ---
+  getAllOrders: () => api.get('/orders/admin/all/'), 
+  updateStatus: (orderId, status, adminNotes) => 
+    api.patch(`/orders/admin/${orderId}/update-status/`, { 
+      status, 
+      admin_notes: adminNotes 
+    }),
+  getStats: () => api.get('/orders/stats/'),
 };
 
-// Payment endpoints
 export const paymentAPI = {
-  initializePayment: (orderId) => api.post('/payments/initialize/', { order_id: orderId }),
-  verifyPayment: (reference) => api.post('/payments/verify/', { reference }),
-  getPaymentHistory: () => api.get('/payments/history/'),
+  initialize: (orderId) => api.post('/payments/initialize/', { order_id: orderId }),
+  verify: (reference) => api.post('/payments/verify/', { reference }),
+  checkStatus: (reference) => api.get(`/payments/check/${reference}/`),
+  getHistory: () => api.get('/payments/history/'),
+  getDetail: (id) => api.get(`/payments/${id}/`),
 };
+
+// src/api/api.js
 
 export const reviewAPI = {
-  createReview: (data) => 
-    api.post('/reviews/create/', data),
+  // Admin Endpoints
+  getAllReviews: () => api.get('/reviews/admin/all/'), 
+  toggleApproval: (id) => api.patch(`/reviews/admin/toggle-approval/${id}/`),
   
-  getMyReviews: () => 
-    api.get('/reviews/my-reviews/'),
-  
-  getFoodReviews: (foodId) => 
-    api.get(`/reviews/food/${foodId}/`),
-  
-  updateReview: (reviewId, data) => 
-    api.put(`/reviews/update/${reviewId}/`, data),
+  // User Endpoints
+  createReview: (data) => api.post('/reviews/create/', data),
+  getMyReviews: () => api.get('/reviews/my-reviews/'),
+  getFoodReviews: (foodId) => api.get(`/reviews/food/${foodId}/`),
+  updateReview: (reviewId, data) => api.put(`/reviews/update/${reviewId}/`, data),
+  deleteReview: (reviewId) => api.delete(`/reviews/delete/${reviewId}/`),
 };
 
 export default api;
